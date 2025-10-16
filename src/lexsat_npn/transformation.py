@@ -14,12 +14,12 @@ class NPNTransformation(object):
         if input_negation is None:
             self.input_negation = [False] * num_bit
         else:
-            self.input_negation = input_negation
+            self.input_negation = list(input_negation)
 
         if input_permutation is None:
             self.input_permutation = list(range(num_bit))
         else:
-            self.input_permutation = input_permutation
+            self.input_permutation = list(input_permutation)
 
         self.output_negation = output_negation
 
