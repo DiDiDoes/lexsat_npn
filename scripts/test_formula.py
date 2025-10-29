@@ -5,6 +5,8 @@ if __name__ == "__main__":
     print("Loading AIG...")
     formula = Formula("examples/example_aig_4bit.aig")
     print(formula.aig)
+    print("Input names:", formula.input_names)
+    print("Output name:", formula.output_name)
 
     print("\nSimulating truth table:")
     truth_table = formula.truth_table()
@@ -17,5 +19,5 @@ if __name__ == "__main__":
     for clause in cnf.clauses:
         print(clause)
     print("Number of variables:", cnf.nv)
-    print("Inputs:", cnf.inps)
-    print("Outputs:", cnf.outs)
+    print("Inputs:", formula.input_variables)
+    print("Outputs:", formula.output_variable)
