@@ -6,27 +6,29 @@ from pysat.solvers import Solver
 
 def solve_lexsat(
         formula: CNF,
-        variables: Iterable[int] = [],
+        target: Iterable[int] = [],
         solver_name = "m22",
         verbose: bool = False
-    ):
+    ) -> tuple[bool, Iterable[int], int]:
     """
     Inputs:
     - formula: CNF formula to be solved.
-    - variables: list of interested variables, from most significant to least
-        significant, to be in smallest lexicographic order. By default, it is
-        all variables in the formula.
+    - target: targeted assignments, from most significant to least significant,
+        to be achieved. By default, it is all the variables in the formula.
     - solver_name: name of the underlying SAT solver to use (default: "m22").
     - verbose: whether to print verbose information during solving.
 
     Outputs:
-    - result: True if satisfiable, False otherwise.
-    - model: assignment of interested variables if satisfiable, None otherwise.
+    - result: True if SAT, False otherwise.
+    - model: assignment of variables if SAT, None otherwise.
     """
-    if variables == []:
-        variables = list(range(1, formula.nv + 1))
+    if target == []:
+        target = list(range(1, formula.nv + 1))
+    else:
+        for assignment in target:
+            assert abs(assignment) <= formula.nv, "Target variable out of range."
 
-    result = []
+    assumption, num_call = [], 1
     with Solver(name=solver_name) as s:
         s.append_formula(formula.clauses)
 
@@ -34,105 +36,34 @@ def solve_lexsat(
         if not s.solve():
             if verbose:
                 print("[LEXSAT] UNSAT")
-            return False, None
+            return False, None, num_call
 
-        # Iteratively find lexicographically smallest model
+        # Iteratively try to achieve target assignments
         model = s.get_model()
         if verbose:
             print("[LEXSAT] SAT")
             print("[LEXSAT] Initial model:", model)
-        while True:
-            # Accept False for the next variables
-            # Flip the next variable assigned True
-            for var in variables[len(result):]:
-                result.append(-var)
-                if var in model:
+        while len(assumption) < len(target):
+            # Accept the next variables if matching target
+            # Flip the next variable not matching target
+            for assignment in target[len(assumption):]:
+                assumption.append(assignment)
+                if assignment not in model:
+                    if verbose:
+                        print("[LEXSAT] Current assumptions:", assumption)
+
+                    # Call SAT solver to check feasibility
+                    num_call += 1
+                    if s.solve(assumptions=assumption):
+                        model = s.get_model()
+                        if verbose:
+                            print("[LEXSAT] New model:", model)
+                    else:
+                        assumption[-1] = -assumption[-1]
+                        if verbose:
+                            print("[LEXSAT] Accept:", assumption[-1])
                     break
-            if verbose:
-                print("[LEXSAT] Current assumptions:", result)
-
-            # Finish if all interested variables are decided
-            if len(result) >= len(variables):
-                break
-
-            # If sat, update model and continue
-            # If unsat, accept True for the last variable
-            if s.solve(assumptions=result):
-                model = s.get_model()
-                if verbose:
-                    print("[LEXSAT] New model:", model)
-            else:
-                result[-1] = -result[-1]
-                if verbose:
-                    print("[LEXSAT] Accept:", result[-1])
 
         if verbose:
-            print("[LEXSAT] Final model:", result)
-        return True, result
-
-
-def solve_lexsat_max(
-        formula: CNF,
-        variables: Iterable[int] = [],
-        solver_name = "m22",
-        verbose: bool = False
-    ):
-    """
-    Inputs:
-    - formula: CNF formula to be solved.
-    - variables: list of interested variables, from most significant to least
-        significant, to be in largest lexicographic order. By default, it is
-        all variables in the formula.
-    - solver_name: name of the underlying SAT solver to use (default: "m22").
-    - verbose: whether to print verbose information during solving.
-
-    Outputs:
-    - result: True if satisfiable, False otherwise.
-    - model: assignment of interested variables if satisfiable, None otherwise.
-    """
-    if variables == []:
-        variables = list(range(1, formula.nv + 1))
-
-    result = []
-    with Solver(name=solver_name) as s:
-        s.append_formula(formula.clauses)
-
-        # Initial satisfiability check
-        if not s.solve():
-            if verbose:
-                print("[LEXSAT] UNSAT")
-            return False, None
-
-        # Iteratively find lexicographically smallest model
-        model = s.get_model()
-        if verbose:
-            print("[LEXSAT] SAT")
-            print("[LEXSAT] Initial model:", model)
-        while True:
-            # Accept True for the next variables
-            # Flip the next variable assigned False
-            for var in variables[len(result):]:
-                result.append(var)
-                if -var in model:
-                    break
-            if verbose:
-                print("[LEXSAT] Current assumptions:", result)
-
-            # Finish if all interested variables are decided
-            if len(result) >= len(variables):
-                break
-
-            # If sat, update model and continue
-            # If unsat, accept False for the last variable
-            if s.solve(assumptions=result):
-                model = s.get_model()
-                if verbose:
-                    print("[LEXSAT] New model:", model)
-            else:
-                result[-1] = -result[-1]
-                if verbose:
-                    print("[LEXSAT] Accept:", result[-1])
-
-        if verbose:
-            print("[LEXSAT] Final model:", result)
-        return True, result
+            print("[LEXSAT] Final model:", assumption)
+        return True, model, num_call
