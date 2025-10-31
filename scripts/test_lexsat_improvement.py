@@ -30,7 +30,7 @@ if __name__ == "__main__":
             print("Input assignment:", inputs)
             original_output = formula.simulate(inputs)
             print("Original output:", original_output)
-            improve = result is False or original_output is True
+            improve = original_output is True
 
             formula.transformation = candidate
             candidate_output = formula.simulate(inputs)

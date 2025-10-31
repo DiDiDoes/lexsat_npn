@@ -49,6 +49,9 @@ class NPNTransformation(object):
             output_negation=output_negation
         )
 
+    def copy(self) -> "NPNTransformation":
+        return copy.deepcopy(self)
+
     def flip(self, index: int) -> "NPNTransformation":
         assert index >= 0 and index <= self.num_bit, "Index out of range."
         new_transformation = copy.deepcopy(self)

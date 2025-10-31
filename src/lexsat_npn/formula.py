@@ -68,6 +68,13 @@ class Formula(object):
         truth_table = [self.simulate(c) for c in product([True, False], repeat=self.num_bit)]
         return TruthTable(truth_table)
 
+    def try_transformation(self, candidate: NPNTransformation) -> TruthTable:
+        original_transformation = self.transformation
+        self.transformation = candidate
+        truth_table = self.truth_table()
+        self.transformation = original_transformation
+        return truth_table
+
     def build_cnf(self):
         self.cnf = CNF(from_aiger=self.aig.aig)
         self.nv = self.cnf.nv
