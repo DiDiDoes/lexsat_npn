@@ -2,7 +2,7 @@ from .formula import TruthTable, Formula
 from .lexsat import solve_lexsat
 
 
-def flip_swap_lexsat_npn(formula: Formula) -> tuple[TruthTable, int, int]:
+def flip_swap_lexsat_npn(formula: Formula) -> tuple[int, int]:
     num_bit = formula.num_bit
     num_trial = 0
     num_call = 0
@@ -40,12 +40,10 @@ def flip_swap_lexsat_npn(formula: Formula) -> tuple[TruthTable, int, int]:
                         formula.transformation = candidate
                         improvement = True
 
-    best_truth_table = formula.truth_table()
-
-    return best_truth_table, num_trial, num_call
+    return num_trial, num_call
 
 
-def sifting_lexsat_npn(formula: Formula) -> tuple[TruthTable, int, int]:
+def sifting_lexsat_npn(formula: Formula) -> tuple[int, int]:
     num_bit = formula.num_bit
     num_trial = 0
     num_call = 0
@@ -79,6 +77,4 @@ def sifting_lexsat_npn(formula: Formula) -> tuple[TruthTable, int, int]:
                         formula.transformation = candidate.copy()
                         improvement = True
 
-    best_truth_table = formula.truth_table()
-
-    return best_truth_table, num_trial, num_call
+    return num_trial, num_call

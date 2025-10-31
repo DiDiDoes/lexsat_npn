@@ -37,14 +37,16 @@ if __name__ == "__main__":
 
     print("\nPerforming Flip and Swap LEXSAT NPN...")
     formula.transformation = original_transformation.copy()
-    best_truth_table, num_trial, num_call = flip_swap_lexsat_npn(formula)
+    num_trial, num_call = flip_swap_lexsat_npn(formula)
+    best_truth_table = formula.truth_table()
     print("Best Truth Table:", best_truth_table)
     print("Number of Trials:", num_trial)
     print("Number of SAT Calls:", num_call)
 
     print("\nPerforming Sifting LEXSAT NPN...")
     formula.transformation = original_transformation.copy()
-    best_truth_table, num_trial, num_call = sifting_lexsat_npn(formula)
+    num_trial, num_call = sifting_lexsat_npn(formula)
+    best_truth_table = formula.truth_table()
     print("Best Truth Table:", best_truth_table)
     print("Number of Trials:", num_trial)
     print("Number of SAT Calls:", num_call)
